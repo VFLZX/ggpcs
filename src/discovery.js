@@ -116,3 +116,4 @@ export function comparableBenchmarkTests(products) {
     return [{testId,direction:[...directions][0],scores:records.map(record=>record?.score??null),sources:records.map(record=>record?.source??null),testedAt:records.map(record=>record?.testedAt??null)}];
   });
 }
+

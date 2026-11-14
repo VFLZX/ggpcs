@@ -47,8 +47,15 @@ export function getProvider(config = {}) {
     if (url === catalogUrl && typeof DecompressionStream === 'function') {
       const compressed = await fetch(compressedCatalogUrl);
       if (compressed.ok) {
-        const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
-        return parseCatalog(await new Response(stream).text());
+        // Static hosts may transparently decompress .gz files when they serve
+        // Content-Encoding: gzip. Check the gzip signature before decoding so
+        // we handle both raw gzip bytes and an already-decoded JSON response.
+        const bytes = new Uint8Array(await compressed.arrayBuffer());
+        const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
+        const text = isGzip
+          ? await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+          : new TextDecoder().decode(bytes);
+        return parseCatalog(text);
       }
     }
     const response = await fetch(url);
@@ -56,3 +63,4 @@ export function getProvider(config = {}) {
     return parseCatalog(await response.text());
   } };
 }
+

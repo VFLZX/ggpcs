@@ -55,6 +55,12 @@
 .build-plan-dots{display:flex;gap:5px}
 .build-plan-dot{width:7px;height:7px;padding:0;border:0;border-radius:9px;background:#5a5968}
 .build-plan-dot.active{width:18px;background:var(--cyan)}
+.build-plan-dots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:0 0 14px}
+.build-plan-dot{width:auto;height:auto;min-width:0;min-height:48px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;text-align:left;transition:border-color .15s,background .15s}
+.build-plan-dot span{font-size:9px;line-height:1.2;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.build-plan-dot b{font:600 11px var(--display);color:var(--soft)}
+.build-plan-dot.active{width:auto;border-color:var(--cyan);background:color-mix(in srgb,var(--surface-2) 84%,var(--cyan))}
+.build-plan-dot.active span,.build-plan-dot.active b{color:var(--cyan)}
 .build-slot{border-top:1px solid var(--line);padding:15px 0}
 .build-slot-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
 .build-slot-heading h3{font:600 13px var(--display);margin:0 0 3px}
@@ -78,7 +84,7 @@
 .build-empty,.build-warning{border:1px solid #665237;background:#2a2118;color:#e7c993;border-radius:6px;padding:10px;font-size:10px}
 .build-warning{margin-bottom:13px}
 @media(max-width:1100px){.build-options{grid-template-columns:repeat(2,minmax(0,1fr))}.builder-form{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:760px){.builder-form{grid-template-columns:1fr 1fr}.builder-form label:first-child{grid-column:span 2}.build-options{grid-template-columns:1fr}.build-option{grid-template-columns:92px minmax(0,1fr)}.build-option-image{height:82px}.build-summary{align-items:flex-start;padding:13px;flex-direction:column}.build-option-count{align-self:flex-start}.build-slider-top{gap:7px;padding:10px}.build-plan-dots{gap:3px}}
+@media(max-width:760px){.builder-form{grid-template-columns:1fr 1fr}.builder-form label:first-child{grid-column:span 2}.build-options{grid-template-columns:1fr}.build-option{grid-template-columns:92px minmax(0,1fr)}.build-option-image{height:82px}.build-summary{align-items:flex-start;padding:13px;flex-direction:column}.build-option-count{align-self:flex-start}.build-slider-top{gap:7px;padding:10px}.build-plan-dots{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.build-plan-dot{min-height:43px}}
 @media(prefers-reduced-motion:reduce){.product-image img,.hardware-illustration,.product-image::before{transition:none}}
 
 /* Higher-density source photos and vector fallback get a cleaner studio finish. */

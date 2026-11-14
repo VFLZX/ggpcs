@@ -81,3 +81,11 @@
 @media(max-width:760px){.builder-form{grid-template-columns:1fr 1fr}.builder-form label:first-child{grid-column:span 2}.build-options{grid-template-columns:1fr}.build-option{grid-template-columns:92px minmax(0,1fr)}.build-option-image{height:82px}.build-summary{align-items:flex-start;padding:13px;flex-direction:column}.build-option-count{align-self:flex-start}.build-slider-top{gap:7px;padding:10px}.build-plan-dots{gap:3px}}
 @media(prefers-reduced-motion:reduce){.product-image img,.hardware-illustration,.product-image::before{transition:none}}
 
+/* Higher-density source photos and vector fallback get a cleaner studio finish. */
+.product-image{background:radial-gradient(ellipse at 50% 69%,#3a3c50 0,transparent 61%),linear-gradient(145deg,#1c1f29,#101218)}
+.product-image img{filter:drop-shadow(0 15px 16px #000a) saturate(1.08) contrast(1.04)}
+.hardware-illustration{filter:drop-shadow(0 15px 16px #0009)}
+.hardware-illustration .shell{stroke:#a4a8bd;stroke-width:1.5}
+.hardware-illustration .trim{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--art-accent,#8f81ed) 55%,transparent))}
+.build-option-image{background:radial-gradient(ellipse at 50% 68%,#383a4d,transparent 68%),linear-gradient(145deg,#20222d,#14161d)}
+

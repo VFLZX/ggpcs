@@ -171,3 +171,4 @@ function compatibilityChecks(build) {
     psu:chosen.psu,cooling:chosen.cooling,requiredPowerW:power
   });
 }
+

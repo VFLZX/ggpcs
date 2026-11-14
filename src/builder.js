@@ -152,9 +152,11 @@ export function optimizeBuild(rankedParts, budget, weights={}, fixedSelections={
     states = [...buckets.values()].flat();
   }
 
-  const hasAllParts=parts.length===buildOrder.length&&states.every(state=>Object.keys(state.build).length===buildOrder.length);
-  const verifiedStates=hasAllParts?states.filter(state=>compatibilityChecks(state.build).every(check=>check.status==='compatible')):[];
-  if(!verifiedStates.length){
+  const hasAllParts=parts.length===buildOrder.length&&states.some(state=>Object.keys(state.build).length===buildOrder.length);
+  // Missing source data cannot prove a conflict. Keep those checks visible as
+  // unknown, but only reject a build when the catalog proves a mismatch.
+  const completeStates=hasAllParts?states.filter(state=>Object.keys(state.build).length===buildOrder.length&&!compatibilityChecks(state.build).some(check=>check.status==='incompatible')):[];
+  if(!completeStates.length){
     const diagnostic=states.reduce((best,state)=>{
       const unknown=compatibilityChecks(state.build).filter(check=>check.status==='unknown').length;
       const bestUnknown=compatibilityChecks(best.build).filter(check=>check.status==='unknown').length;
@@ -163,14 +165,16 @@ export function optimizeBuild(rankedParts, budget, weights={}, fixedSelections={
     },states[0]);
     return {build:{},total:0,quality:diagnostic.quality,checks:compatibilityChecks(diagnostic.build),complete:false,verified:false,withinBudget:true,missingParts:buildOrder,verificationGaps:compatibilityChecks(diagnostic.build).filter(check=>check.status!=='compatible')};
   }
-  const closestSpend = Math.max(...verifiedStates.map(state=>state.cost));
-  const nearBudget = verifiedStates.filter(state=>state.cost>=budget-Math.max(5,budget*0.01));
-  const nearFullBudget = nearBudget.length?nearBudget:verifiedStates.filter(state=>state.cost>=closestSpend-Math.max(5,budget*0.01));
+  const closestSpend = Math.max(...completeStates.map(state=>state.cost));
+  const nearBudget = completeStates.filter(state=>state.cost>=budget-Math.max(5,budget*0.01));
+  const nearFullBudget = nearBudget.length?nearBudget:completeStates.filter(state=>state.cost>=closestSpend-Math.max(5,budget*0.01));
   nearFullBudget.sort((a,b)=>b.quality-a.quality||b.cost-a.cost);
-  const best = nearFullBudget[0]||verifiedStates.reduce((a,b)=>b.cost>a.cost?b:a,verifiedStates[0]);
+  const best = nearFullBudget[0]||completeStates.reduce((a,b)=>b.cost>a.cost?b:a,completeStates[0]);
   const checks = compatibilityChecks(best.build);
-  return {build:best.build,total:best.cost,quality:best.quality,checks,complete:true,verified:true,withinBudget:best.cost<=budget+0.005,missingParts:[]};
+  return {build:best.build,total:best.cost,quality:best.quality,checks,complete:true,verified:checks.every(check=>check.status==='compatible'),withinBudget:best.cost<=budget+0.005,missingParts:[]};
 }
+
+export function buildCompatibilityChecks(build) { return compatibilityChecks(build); }
 
 function compatibilityChecks(build) {
   const chosen = Object.fromEntries(Object.entries(build).map(([part,product])=>[part,resolvedSpecs(part,product)]));

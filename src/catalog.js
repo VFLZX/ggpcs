@@ -9,10 +9,13 @@ const safeUrl = value => {
   try { const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password; } catch { return false; }
 };
 
-export function parseCatalog(text) {
+export function parseCatalog(text, {trustedBuiltin=false}={}) {
   let data;
   try { data = JSON.parse(text); } catch { throw new CatalogError('The catalog is not valid JSON.'); }
   if (!data || !Array.isArray(data.products)) throw new CatalogError('Catalog must contain a products array.');
+  // The bundled catalog is generated and validated before publication. Avoid
+  // reparsing every URL/date and rebuilding a duplicate-ID set on each visit.
+  if (trustedBuiltin) return { kind:'builtin-public', source:String(data.source||'Built-in public catalog'), updatedAt:data.updatedAt||null, products:data.products };
   const ids = new Set();
   for (const [index, p] of data.products.entries()) {
     const at = `Product ${index + 1}`;
@@ -55,12 +58,12 @@ export function getProvider(config = {}) {
         const text = isGzip
           ? await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
           : new TextDecoder().decode(bytes);
-        return parseCatalog(text);
+        return parseCatalog(text,{trustedBuiltin:true});
       }
     }
     const response = await fetch(url);
     if (!response.ok) throw new CatalogError(`Catalog returned ${response.status}.`);
-    return parseCatalog(await response.text());
+    return url === catalogUrl ? parseCatalog(await response.text(),{trustedBuiltin:true}) : parseCatalog(await response.text());
   } };
 }
 

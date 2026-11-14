@@ -1,16 +1,23 @@
 const spec = (product, key) => product.specs?.[key];
 const numeric = value => value === '' || value == null || !Number.isFinite(Number(value)) ? null : Number(value);
+const searchTextCache = new WeakMap();
+const productRankCache = new WeakMap();
 
 export function searchProducts(products, query = '') {
   const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
   if (!terms.length) return products;
   return products.filter(p => {
-    const haystack = [p.name,p.brand,p.category,...Object.entries(p.specs || {}).flatMap(([k,v])=>[k,String(v)])].join(' ').toLowerCase();
+    let haystack = searchTextCache.get(p);
+    if (haystack === undefined) {
+      haystack = [p.name,p.brand,p.category,...Object.entries(p.specs || {}).flatMap(([k,v])=>[k,String(v)])].join(' ').toLowerCase();
+      searchTextCache.set(p,haystack);
+    }
     return terms.every(term => haystack.includes(term));
   });
 }
 
 export function filterProducts(products, category, filters = {}) {
+  if (!category && !Object.keys(filters).length) return products;
   return products.filter(p => {
     if (category && p.category !== category) return false;
     const maxPrice = numeric(filters.maxPrice), minPrice = numeric(filters.minPrice);
@@ -61,6 +68,8 @@ function generationScore(product) {
 
 export function rankProducts(products, useCase = 'overall') {
   const scored = products.map(product => {
+    let byUseCase=productRankCache.get(product);
+    if(byUseCase?.has(useCase))return {product,...byUseCase.get(useCase)};
     const {score:value,reasons} = valueScore(product);
     let score = value;
     const s = product.specs || {};
@@ -85,7 +94,10 @@ export function rankProducts(products, useCase = 'overall') {
     } else if (useCase === 'budget' && product.priceCHF != null) {
       score += Math.max(0,20 - product.priceCHF/20); reasons.push(`Listed price: CHF ${product.priceCHF}.`);
     }
-    return {product,score:Math.round(score),reasons};
+    const result={score:Math.round(score),reasons};
+    if(!byUseCase){byUseCase=new Map();productRankCache.set(product,byUseCase)}
+    byUseCase.set(useCase,result);
+    return {product,...result};
   }).sort((a,b)=>b.score-a.score);
   return scored.map((entry,i) => ({...entry,label:i===0 && entry.score>=35 ? (useCase==='budget'?'BEST BUDGET':/esport|fps|competitive/i.test(useCase)?'BEST FOR ESPORTS':/performance|enthusiast/i.test(useCase)?'BEST PERFORMANCE':useCase==='value'?'BEST VALUE':'BEST OVERALL') : null}));
 }

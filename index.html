@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c0d11">
+  <meta name="description" content="Find, filter, and compare gaming hardware for your needs and budget in Switzerland.">
+  <title>GameGear Hub — Find your edge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="src/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="GameGear Hub home"><span class="brand-mark">G<span>·</span>G</span><span class="brand-name">GAMEGEAR <b>HUB</b></span></a>
+      <div class="top-search"><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search hardware, specs, brands…" autocomplete="off" aria-label="Search hardware"><kbd>⌘ K</kbd><div id="search-suggestions" class="suggestions" hidden></div></div>
+      <nav class="top-links" aria-label="Main navigation"><button class="nav-link" data-page="catalog">Discover</button><button class="nav-link" data-page="builder">Build my PC <span class="new-tag">BETA</span></button></nav>
+      <div class="top-actions"><button class="icon-button" id="theme-toggle" aria-label="Switch color theme" title="Switch theme">◐</button><button class="avatar-button" id="favorites-shortcut" aria-label="Show favorites">♡</button></div>
+    </header>
+
+    <div class="data-banner" id="data-banner"><span class="status-dot"></span><span id="data-status">Local catalog · No live Digitec feed connected</span><button id="export-button" class="text-button">Export catalog</button><button id="import-open" class="text-button accent-text">Import products <span>↗</span></button><input id="import-file" type="file" accept="application/json,.json" hidden></div>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="Hardware categories">
+        <div class="side-heading">EXPLORE HARDWARE</div>
+        <button class="side-home active" data-page="catalog"><span class="side-icon">◈</span> All products <span class="side-count" id="all-count">0</span></button>
+        <div id="category-nav"></div>
+        <div class="sidebar-bottom"><div class="swiss-mark">CH</div><div><b>Built for Switzerland</b><small>CHF pricing when sourced</small></div></div>
+      </aside>
+
+      <main id="main-content" tabindex="-1">
+        <section id="page-catalog" class="page active">
+          <div class="hero-row"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT UPGRADE STARTS HERE</div><h1>Find your <span class="gradient-word">edge.</span></h1><p class="hero-copy">The right gear changes everything. Filter by what matters, compare what counts, and build with confidence.</p></div><div class="hero-stat"><span class="stat-ring">CH</span><span>SWISS MARKET<br><b>CHF · METRIC</b></span></div></div>
+          <div class="quick-categories" id="quick-categories"></div>
+          <div class="section-heading"><div><div class="eyebrow small-eyebrow">HARDWARE FINDER</div><h2 id="category-title">Explore all gear</h2></div><div class="result-controls"><span id="result-count">0 products</span><label class="sr-only" for="usecase-select">Recommendation focus</label><select id="usecase-select"><option value="overall">Best overall</option><option value="value">Best value</option><option value="budget">Budget picks</option><option value="esports">Competitive gaming</option><option value="performance">Maximum performance</option></select><label class="sr-only" for="sort-select">Sort products</label><select id="sort-select"><option value="value">Recommended</option><option value="performance">Performance</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="rating">Top rated</option><option value="name">Name</option></select></div></div>
+          <div class="catalog-layout"><section id="filters" class="filter-panel" aria-label="Product filters"></section><section class="results-area"><div id="active-filter-tags" class="active-tags"></div><div id="product-grid" class="product-grid"></div><button id="load-more-products" class="load-more-button" hidden>Load more products</button><div id="empty-state" class="empty-state"></div></section></div>
+          <section class="recent-section" id="recent-section" hidden><div class="section-heading"><div><div class="eyebrow small-eyebrow">PICK UP WHERE YOU LEFT OFF</div><h2>Recently viewed</h2></div></div><div class="recent-list" id="recent-list"></div></section>
+        </section>
+
+        <section id="page-builder" class="page"><div class="eyebrow"><span class="eyebrow-line"></span> BUILD MY GAMING PC</div><h1>Make every franc <span class="gradient-word">count.</span></h1><p class="hero-copy">Set your maximum budget and performance goals. Compare five complete builds that use nearly all of it, then browse the options with the slider at the top.</p><p class="hero-copy">Each plan avoids known CPU, memory, PCIe, power, and fit conflicts. Missing product specifications stay marked unknown. Prices are dated U.S. or France references converted to CHF, not Swiss store quotes or live stock.</p><div class="builder-wrap"><form id="builder-form" class="builder-form"><label>Maximum budget <span class="field-value" id="budget-value">CHF 1,500</span><input id="build-budget" type="range" min="300" max="20000" step="100" value="1500"><input id="build-budget-number" type="number" min="300" max="20000" step="100" value="1500" aria-label="Maximum budget in CHF"></label><label>Gaming resolution<select id="build-resolution"><option>1080p</option><option selected>1440p</option><option>4K</option></select></label><label>Target frame rate<select id="build-fps"><option>60 FPS</option><option selected>144 FPS</option><option>240 FPS</option></select></label><label>Performance goal<select id="build-focus"><option value="balanced">Balanced performance</option><option value="competitive">Competitive FPS</option><option value="visual">Maximum visual quality</option><option value="value">Best value</option></select></label><label>Preferred GPU<select id="build-gpu"><option>Any</option><option>NVIDIA</option><option>AMD</option></select></label><label>Preferred CPU<select id="build-cpu"><option>Any</option><option>AMD</option><option>Intel</option></select></label><label>Main game<input id="build-game" type="text" placeholder="e.g. Counter-Strike 2"></label><label>Aesthetic preference<select id="build-style"><option>Performance first</option><option>Quiet and understated</option><option>Compact build</option><option>RGB showcase</option></select></label><label>Upgrade priority<select id="build-priority"><option value="balanced">Balanced</option><option value="gpu">Graphics card</option><option value="cpu">Processor</option><option value="memory">Memory & storage</option></select></label><button class="primary-button" type="submit">Refresh part options <span>→</span></button></form><div id="build-result" class="build-result"></div></div></section>
+
+        <section id="page-compare" class="page"><div class="eyebrow"><span class="eyebrow-line"></span> SIDE BY SIDE</div><h1>Compare your <span class="gradient-word">shortlist.</span></h1><p class="hero-copy">Choose up to four products from the finder to see what sets them apart.</p><div id="comparison-view" class="comparison-view"></div></section>
+
+        <section id="page-favorites" class="page"><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL SHORTLIST</div><h1>Saved for <span class="gradient-word">later.</span></h1><div id="favorites-view" class="product-grid favorites-grid"></div></section>
+      </main>
+    </div>
+
+    <div id="compare-dock" class="compare-dock" hidden><div><span class="dock-count" id="compare-count">0</span><b> products selected</b><small>Compare up to 4 products</small></div><div id="dock-products" class="dock-products"></div><button id="open-compare" class="primary-button">Compare now <span>→</span></button><button id="clear-compare" class="icon-button" aria-label="Clear comparison">×</button></div>
+    <dialog id="product-dialog" class="product-dialog"><form method="dialog" class="dialog-close-row"><button class="icon-button" aria-label="Close product details">×</button></form><div id="product-dialog-content"></div></dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <footer><span>GAMEGEAR HUB <b>·</b> SWISS GAMING HARDWARE FINDER</span><span>Catalog data is displayed with its source and update time. <a href="data/THIRD_PARTY_ATTRIBUTIONS.md" target="_blank" rel="noopener noreferrer">Data licenses & attribution</a></span><span>© 2026</span></footer>
+  </div>
+</body>
+</html>

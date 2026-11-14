@@ -223,3 +223,4 @@ $('#import-open').onclick=()=>$('#import-file').click();$('#import-file').onchan
 $('#export-button').onclick=()=>{const blob=new Blob([JSON.stringify(catalog,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gamegear-hub-catalog.json';a.click();URL.revokeObjectURL(a.href)};
 $('#recent-section').hidden=true;
 loadCatalog();
+

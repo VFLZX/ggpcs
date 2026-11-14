@@ -135,7 +135,7 @@ export function optimizeBuild(rankedParts, budget, weights={}, fixedSelections={
     }
     if (!next.length) {
       const partial=states.reduce((best,state)=>state.cost>best.cost?state:best,states[0]);
-      return {build:partial.build,total:partial.cost,quality:partial.quality,checks:compatibilityChecks(partial.build),complete:false,withinBudget:true,missingParts:buildOrder.filter(slot=>!partial.build[slot])};
+      return {build:partial.build,total:partial.cost,quality:partial.quality,checks:compatibilityChecks(partial.build),complete:false,verified:false,withinBudget:true,missingParts:buildOrder.filter(slot=>!partial.build[slot])};
     }
 
     // Keep multiple high-quality routes at each spend level so early GPU/CPU
@@ -152,13 +152,24 @@ export function optimizeBuild(rankedParts, budget, weights={}, fixedSelections={
     states = [...buckets.values()].flat();
   }
 
-  const closestSpend = Math.max(...states.map(state=>state.cost));
-  const nearBudget = states.filter(state=>state.cost>=budget-Math.max(5,budget*0.01));
-  const nearFullBudget = nearBudget.length?nearBudget:states.filter(state=>state.cost>=closestSpend-Math.max(5,budget*0.01));
+  const hasAllParts=parts.length===buildOrder.length&&states.every(state=>Object.keys(state.build).length===buildOrder.length);
+  const verifiedStates=hasAllParts?states.filter(state=>compatibilityChecks(state.build).every(check=>check.status==='compatible')):[];
+  if(!verifiedStates.length){
+    const diagnostic=states.reduce((best,state)=>{
+      const unknown=compatibilityChecks(state.build).filter(check=>check.status==='unknown').length;
+      const bestUnknown=compatibilityChecks(best.build).filter(check=>check.status==='unknown').length;
+      if(unknown<bestUnknown||(unknown===bestUnknown&&(state.quality>best.quality||(state.quality===best.quality&&state.cost>best.cost))))return state;
+      return best;
+    },states[0]);
+    return {build:{},total:0,quality:diagnostic.quality,checks:compatibilityChecks(diagnostic.build),complete:false,verified:false,withinBudget:true,missingParts:buildOrder,verificationGaps:compatibilityChecks(diagnostic.build).filter(check=>check.status!=='compatible')};
+  }
+  const closestSpend = Math.max(...verifiedStates.map(state=>state.cost));
+  const nearBudget = verifiedStates.filter(state=>state.cost>=budget-Math.max(5,budget*0.01));
+  const nearFullBudget = nearBudget.length?nearBudget:verifiedStates.filter(state=>state.cost>=closestSpend-Math.max(5,budget*0.01));
   nearFullBudget.sort((a,b)=>b.quality-a.quality||b.cost-a.cost);
-  const best = nearFullBudget[0]||states.reduce((a,b)=>b.cost>a.cost?b:a,states[0]);
+  const best = nearFullBudget[0]||verifiedStates.reduce((a,b)=>b.cost>a.cost?b:a,verifiedStates[0]);
   const checks = compatibilityChecks(best.build);
-  return {build:best.build,total:best.cost,quality:best.quality,checks,complete:parts.length===buildOrder.length&&Object.keys(best.build).length===buildOrder.length,withinBudget:best.cost<=budget+0.005,missingParts:buildOrder.filter(slot=>!best.build[slot])};
+  return {build:best.build,total:best.cost,quality:best.quality,checks,complete:true,verified:true,withinBudget:best.cost<=budget+0.005,missingParts:[]};
 }
 
 function compatibilityChecks(build) {

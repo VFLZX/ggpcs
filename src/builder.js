@@ -135,7 +135,7 @@ export function optimizeBuild(rankedParts, budget, weights={}, fixedSelections={
     }
     if (!next.length) {
       const partial=states.reduce((best,state)=>state.cost>best.cost?state:best,states[0]);
-      return {build:partial.build,total:partial.cost,checks:compatibilityChecks(partial.build),complete:false,withinBudget:true,missingParts:buildOrder.filter(slot=>!partial.build[slot])};
+      return {build:partial.build,total:partial.cost,quality:partial.quality,checks:compatibilityChecks(partial.build),complete:false,withinBudget:true,missingParts:buildOrder.filter(slot=>!partial.build[slot])};
     }
 
     // Keep multiple high-quality routes at each spend level so early GPU/CPU
@@ -158,7 +158,7 @@ export function optimizeBuild(rankedParts, budget, weights={}, fixedSelections={
   nearFullBudget.sort((a,b)=>b.quality-a.quality||b.cost-a.cost);
   const best = nearFullBudget[0]||states.reduce((a,b)=>b.cost>a.cost?b:a,states[0]);
   const checks = compatibilityChecks(best.build);
-  return {build:best.build,total:best.cost,checks,complete:parts.length===buildOrder.length&&Object.keys(best.build).length===buildOrder.length,withinBudget:best.cost<=budget+0.005,missingParts:buildOrder.filter(slot=>!best.build[slot])};
+  return {build:best.build,total:best.cost,quality:best.quality,checks,complete:parts.length===buildOrder.length&&Object.keys(best.build).length===buildOrder.length,withinBudget:best.cost<=budget+0.005,missingParts:buildOrder.filter(slot=>!best.build[slot])};
 }
 
 function compatibilityChecks(build) {
